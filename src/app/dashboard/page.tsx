@@ -66,10 +66,9 @@ export default function Dashboard() {
         </div>
 
         {/* Input Bar */}
-        <div className="border-t border-gray-200">
-          <div className="ml-0">
+        <div className="bg-gray-50 mb-6">
+         
             <InputBar />
-          </div>
         </div>
       </div>
     </div>

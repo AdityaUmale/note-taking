@@ -5,7 +5,7 @@ import { PenLine, ImageIcon } from "lucide-react"
 
 export default function InputBar() {
   return (
-    <Card className="w-full max-w-3xl mx-auto">
+    <Card className="w-full max-w-3xl mx-auto rounded-3xl">
       <div className="flex items-center gap-2 p-2 px-3">
         <div className="flex gap-2">
           <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground">
