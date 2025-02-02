@@ -3,9 +3,12 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Home, Star } from 'lucide-react';
+import { Home, Star } from 'lucide-react';
 import { NoteCard } from '../components/NoteCard';
 import  InputBar  from '../components/InputBar';
+import { Search, SortDesc } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -18,9 +21,9 @@ export default function Dashboard() {
   }, [router]);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 p-4">
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200">
+      <div className="w-80 bg-white border border-gray-200 rounded-2xl mr-4 p-2 mt-2 mb-3">
         <div className="p-4">
           <h1 className="text-xl font-bold text-purple-600">AI Notes</h1>
         </div>
@@ -42,13 +45,20 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col">
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-auto">
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-2xl font-bold text-gray-900">My Notes</h1>
-              <button className="flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700">
-                <Plus className="w-4 h-4 mr-2" />
-                New Note
-              </button>
+          <div className="p-4">
+            {/* Search and Sort Section */}
+            <div className="flex items-center justify-between mb-12">
+              <div className="relative flex-1 max-w-5xl">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input 
+                  placeholder="Search" 
+                  className="pl-10 bg-white h-11"
+                />
+              </div>
+              <Button variant="ghost" className="flex items-center gap-2 ml-2 h-12">
+                <SortDesc className="h-4 w-4" />
+                Sort
+              </Button>
             </div>
 
             {/* Notes Grid */}
