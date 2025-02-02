@@ -1,24 +1,32 @@
 
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Home, Star } from 'lucide-react';
 import { NoteCard } from '../components/NoteCard';
 import  InputBar  from '../components/InputBar';
 import { Search, SortDesc } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+
+interface Note {
+  title: string;
+  content: string;
+  date: Date;
+  isNew?: boolean;
+}
 
 export default function Dashboard() {
-  const router = useRouter();
+  const [notes, setNotes] = useState<Note[]>([]);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/sign-in');
-    }
-  }, [router]);
+  const handleNewNote = (note: { title: string; content: string }) => {
+    const newNote = {
+      ...note,
+      date: new Date(),
+      isNew: true,
+    };
+    setNotes(prevNotes => [newNote, ...prevNotes]);
+  };
 
   return (
     <div className="flex h-screen bg-gray-50 p-4">
@@ -45,7 +53,7 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col">
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-auto">
-          <div className="p-4">
+          <div className="p-8">
             {/* Search and Sort Section */}
             <div className="flex items-center justify-between mb-12">
               <div className="relative flex-1 max-w-5xl">
@@ -63,22 +71,22 @@ export default function Dashboard() {
 
             {/* Notes Grid */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <NoteCard
-                title="Engineering Assignment Audio"
-                content="I'm recording an audio to transcribe into text for the assignment of engineering in terms of actors..."
-                date={new Date('2025-01-30')}
-                duration="00:09"
-                isNew={true}
-              />
-              {/* Add more NoteCard components as needed */}
+              {notes.map((note, index) => (
+                <NoteCard
+                  key={index}
+                  title={note.title}
+                  content={note.content}
+                  date={note.date}
+                  isNew={note.isNew}
+                />
+              ))}
             </div>
           </div>
         </div>
 
         {/* Input Bar */}
         <div className="bg-gray-50 mb-6">
-         
-            <InputBar />
+          <InputBar onSubmit={handleNewNote} />
         </div>
       </div>
     </div>
