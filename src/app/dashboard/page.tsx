@@ -1,13 +1,12 @@
-
 'use client';
 
-import { Home, Star } from 'lucide-react';
+import { Home, Star, Search, SortDesc } from 'lucide-react';
 import { NoteCard } from '../components/NoteCard';
-import  InputBar  from '../components/InputBar';
-import { Search, SortDesc } from 'lucide-react';
+import InputBar from '../components/InputBar';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from 'react';
+import NoteModal from '../components/NoteModal';
 
 interface Note {
   title: string;
@@ -18,6 +17,7 @@ interface Note {
 
 export default function Dashboard() {
   const [notes, setNotes] = useState<Note[]>([]);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -63,7 +63,6 @@ export default function Dashboard() {
       setNotes(prevNotes => [newNote, ...prevNotes]);
     } catch (error) {
       console.error('Error creating note:', error);
-      // You might want to add error handling UI here
     }
   };
 
@@ -117,6 +116,7 @@ export default function Dashboard() {
                   content={note.content}
                   date={note.date}
                   isNew={note.isNew}
+                  onClick={() => setSelectedNote(note)}
                 />
               ))}
             </div>
@@ -128,6 +128,23 @@ export default function Dashboard() {
           <InputBar onSubmit={handleNewNote} />
         </div>
       </div>
+
+      {/* Modal */}
+      {selectedNote && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedNote(null);
+          }}
+        >
+          <div className="w-[90%] max-w-3xl max-h-[90vh] overflow-auto z-50 modal-animation">
+            <NoteModal
+              note={selectedNote}
+              onClose={() => setSelectedNote(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

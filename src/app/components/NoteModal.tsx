@@ -3,10 +3,19 @@
 import { useState, useRef } from "react"
 import { Star, Share2, X, Play, Pause, Download, Copy, ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
-export default function NoteModal() {
+interface NoteModalProps {
+  note: {
+    title: string;
+    content: string;
+    date: Date;
+  };
+  onClose: () => void;
+}
+
+export default function NoteModal({ note, onClose }: NoteModalProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -54,8 +63,10 @@ export default function NoteModal() {
     <Card className="max-w-3xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="space-y-1">
-          <CardTitle>Engineering Assignment Audio</CardTitle>
-          <p className="text-sm text-muted-foreground">30 January 2025 · 05:26 PM</p>
+          <CardTitle>{note.title}</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {note.date.toLocaleDateString()} · {note.date.toLocaleTimeString()}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon">
@@ -64,7 +75,7 @@ export default function NoteModal() {
           <Button variant="ghost" size="icon">
             <Share2 className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -127,9 +138,7 @@ export default function NoteModal() {
                 Copy
               </Button>
             </div>
-            <p className="text-muted-foreground">
-              I&apos;m recording an audio to transcribe into text for the assignment of engineering in terms of actors.
-            </p>
+            <p className="text-muted-foreground">{note.content}</p>
             <Button variant="link" className="px-0">
               Read More
             </Button>

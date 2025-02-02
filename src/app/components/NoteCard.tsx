@@ -7,11 +7,15 @@ interface NoteCardProps {
   date: Date;
   duration?: string;
   isNew?: boolean;
+  onClick?: () => void;
 }
 
-export function NoteCard({ title, content, date, duration, isNew }: NoteCardProps) {
+export function NoteCard({ title, content, date, duration, isNew, onClick }: NoteCardProps) {
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div 
+      className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           {isNew && (
@@ -30,15 +34,17 @@ export function NoteCard({ title, content, date, duration, isNew }: NoteCardProp
           </div>
         )}
       </div>
-
       <h3 className="font-medium text-gray-900 mb-1">{title}</h3>
       <p className="text-sm text-gray-600 line-clamp-2">{content}</p>
-
       <div className="flex items-center justify-between mt-4">
-        <button 
+        <button
           className="text-gray-400 hover:text-gray-600"
           title="More options"
           aria-label="More options"
+          onClick={(e) => {
+            e.stopPropagation();
+            // Add your more options handling here
+          }}
         >
           <MoreHorizontal className="w-5 h-5" />
         </button>
