@@ -1,3 +1,4 @@
+// dashboard.tsx
 'use client';
 
 import { Home, Star, Search, SortDesc } from 'lucide-react';
@@ -18,6 +19,7 @@ interface Note {
 export default function Dashboard() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [isModalFullScreen, setIsModalFullScreen] = useState(false);
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -59,11 +61,16 @@ export default function Dashboard() {
         date: new Date(savedNote.date),
         isNew: true,
       };
-      
+
       setNotes(prevNotes => [newNote, ...prevNotes]);
     } catch (error) {
       console.error('Error creating note:', error);
     }
+  };
+
+  // Toggle the full screen state for the modal
+  const toggleModalFullScreen = () => {
+    setIsModalFullScreen((prev) => !prev);
   };
 
   return (
@@ -129,18 +136,35 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal Overlay */}
       {selectedNote && (
         <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center"
+          className={
+            isModalFullScreen
+              ? "fixed inset-0 z-40" // No backdrop or centering when full screen
+              : "fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center"
+          }
           onClick={(e) => {
-            if (e.target === e.currentTarget) setSelectedNote(null);
+            if (!isModalFullScreen && e.target === e.currentTarget) {
+              setSelectedNote(null);
+            }
           }}
         >
-          <div className="w-[90%] max-w-3xl max-h-[90vh] overflow-auto z-50 modal-animation">
+          <div 
+            className={
+              isModalFullScreen
+                ? "w-full h-full" // Full screen modal container
+                : "w-[90%] max-w-3xl max-h-[90vh] overflow-auto"
+            }
+          >
             <NoteModal
               note={selectedNote}
-              onClose={() => setSelectedNote(null)}
+              onClose={() => {
+                setSelectedNote(null);
+                setIsModalFullScreen(false);
+              }}
+              toggleFullScreen={toggleModalFullScreen}
+              isFullScreen={isModalFullScreen}
             />
           </div>
         </div>
