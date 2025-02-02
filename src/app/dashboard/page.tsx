@@ -7,7 +7,7 @@ import  InputBar  from '../components/InputBar';
 import { Search, SortDesc } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Note {
   title: string;
@@ -19,13 +19,52 @@ interface Note {
 export default function Dashboard() {
   const [notes, setNotes] = useState<Note[]>([]);
 
-  const handleNewNote = (note: { title: string; content: string }) => {
-    const newNote = {
-      ...note,
-      date: new Date(),
-      isNew: true,
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const response = await fetch('/api/notes');
+        if (!response.ok) {
+          throw new Error('Failed to fetch notes');
+        }
+        const data = await response.json();
+        setNotes(data.map((note: Note) => ({
+          ...note,
+          date: new Date(note.date)
+        })));
+      } catch (error) {
+        console.error('Error fetching notes:', error);
+      }
     };
-    setNotes(prevNotes => [newNote, ...prevNotes]);
+
+    fetchNotes();
+  }, []);
+
+  const handleNewNote = async (note: { title: string; content: string }) => {
+    try {
+      const response = await fetch('/api/notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(note),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create note');
+      }
+
+      const savedNote = await response.json();
+      const newNote = {
+        ...savedNote,
+        date: new Date(savedNote.date),
+        isNew: true,
+      };
+      
+      setNotes(prevNotes => [newNote, ...prevNotes]);
+    } catch (error) {
+      console.error('Error creating note:', error);
+      // You might want to add error handling UI here
+    }
   };
 
   return (
