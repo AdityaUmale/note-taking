@@ -1,4 +1,4 @@
-import { Copy, Edit2, MoreHorizontal, Play, Plus, Trash2 } from 'lucide-react';
+import { Copy, Edit2, MoreHorizontal, Play, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   DropdownMenu,
@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 interface NoteCardProps {
   title: string;
@@ -29,9 +30,17 @@ export function NoteCard({
   onDelete,
   onRename 
 }: NoteCardProps) {
-  const handleCopyToClipboard = (e: React.MouseEvent) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyToClipboard = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(content);
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+    }
   };
 
   return (
@@ -65,21 +74,12 @@ export function NoteCard({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+          className={`h-8 w-8 bg-white hover:bg-gray-50 ${
+            copied ? 'text-green-500' : 'text-gray-400 hover:text-gray-600'
+          }`}
           onClick={handleCopyToClipboard}
         >
           <Copy className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-50"
-          onClick={(e) => {
-            e.stopPropagation();
-            // Add your plus button handling here
-          }}
-        >
-          <Plus className="w-4 h-4" />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

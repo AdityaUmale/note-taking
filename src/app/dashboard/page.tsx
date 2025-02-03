@@ -88,37 +88,11 @@ export default function Dashboard() {
         throw new Error('Failed to delete note');
       }
 
+      // Remove note from UI
       setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
     } catch (error) {
       console.error('Error deleting note:', error);
-    }
-  };
-
-  const handleRenameNote = async (noteId: string) => {
-    const note = notes.find(n => n.id === noteId);
-    if (!note) return;
-
-    const newTitle = window.prompt('Enter new title:', note.title);
-    if (!newTitle) return;
-
-    try {
-      const response = await fetch(`/api/notes/${noteId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title: newTitle }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to rename note');
-      }
-
-      setNotes(prevNotes => prevNotes.map(note => 
-        note.id === noteId ? { ...note, title: newTitle } : note
-      ));
-    } catch (error) {
-      console.error('Error renaming note:', error);
+      // You might want to add a toast notification here for error feedback
     }
   };
 
