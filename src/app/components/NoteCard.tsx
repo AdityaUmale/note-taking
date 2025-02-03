@@ -1,16 +1,16 @@
-import { Copy, Edit2, MoreHorizontal, Play, Trash2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Copy, Edit2, MoreHorizontal, Play, Trash2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface NoteCardProps {
-  id: string;  // Add this
+  id: string;
   title: string;
   content: string;
   date: Date;
@@ -21,16 +21,15 @@ interface NoteCardProps {
   onRename?: () => void;
 }
 
-export function NoteCard({ 
-
-  title, 
-  content, 
-  date, 
-  duration, 
-  isNew, 
+export function NoteCard({
+  title,
+  content,
+  date,
+  duration,
+  isNew,
   onClick,
   onDelete,
-  onRename 
+  onRename,
 }: NoteCardProps) {
   const [copied, setCopied] = useState(false);
 
@@ -41,12 +40,12 @@ export function NoteCard({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
     } catch (err) {
-      console.error('Failed to copy text:', err);
+      console.error("Failed to copy text:", err);
     }
   };
 
   return (
-    <div 
+    <div
       className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative"
       onClick={onClick}
     >
@@ -70,14 +69,14 @@ export function NoteCard({
       </div>
       <h3 className="font-medium text-gray-900 mb-1">{title}</h3>
       <p className="text-sm text-gray-600 line-clamp-2">{content}</p>
-      
+
       {/* Action Buttons */}
       <div className="flex items-center justify-end gap-2 mt-4">
         <Button
           variant="ghost"
           size="icon"
           className={`h-8 w-8 bg-white hover:bg-gray-50 ${
-            copied ? 'text-green-500' : 'text-gray-400 hover:text-gray-600'
+            copied ? "text-green-500" : "text-gray-400 hover:text-gray-600"
           }`}
           onClick={handleCopyToClipboard}
         >
@@ -95,10 +94,12 @@ export function NoteCard({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={(e) => {
-              e.stopPropagation();
-              onRename?.();
-            }}>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onRename?.();
+              }}
+            >
               <Edit2 className="mr-2 h-4 w-4" />
               Rename note
             </DropdownMenuItem>

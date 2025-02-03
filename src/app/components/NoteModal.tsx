@@ -38,7 +38,12 @@ interface NoteModalProps {
   isFullScreen: boolean;
 }
 
-export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }: NoteModalProps) {
+export default function NoteModal({
+  note,
+  onClose,
+  toggleFullScreen,
+  onUpdate,
+}: NoteModalProps) {
   const [isFavorite, setIsFavorite] = useState(note.isFavorite || false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -46,9 +51,9 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
   const handleFavoriteClick = async () => {
     try {
       const response = await fetch(`/api/notes/${note.id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           isFavorite: !isFavorite,
@@ -56,7 +61,7 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update favorite status');
+        throw new Error("Failed to update favorite status");
       }
 
       setIsFavorite(!isFavorite);
@@ -64,10 +69,9 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
         onUpdate({ ...note, isFavorite: !isFavorite });
       }
     } catch (error) {
-      console.error('Error updating favorite status:', error);
+      console.error("Error updating favorite status:", error);
     }
   };
-
 
   const handlePlayPause = () => {
     if (audioRef.current) {
@@ -83,21 +87,21 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
   const [isEditing, setIsEditing] = useState(false);
   const [editedNote, setEditedNote] = useState({
     title: note.title,
-    content: note.content
+    content: note.content,
   });
 
   const handleEdit = async () => {
     try {
       const response = await fetch(`/api/notes/${note.id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(editedNote),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update note');
+        throw new Error("Failed to update note");
       }
 
       if (onUpdate) {
@@ -105,7 +109,7 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
       }
       setIsEditing(false);
     } catch (error) {
-      console.error('Error updating note:', error);
+      console.error("Error updating note:", error);
     }
   };
 
@@ -120,21 +124,28 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
             {isEditing ? (
               <Input
                 value={editedNote.title}
-                onChange={(e) => setEditedNote({ ...editedNote, title: e.target.value })}
+                onChange={(e) =>
+                  setEditedNote({ ...editedNote, title: e.target.value })
+                }
                 className="font-semibold text-xl"
               />
             ) : (
               <CardTitle>{note.title}</CardTitle>
             )}
             <p className="text-sm text-muted-foreground">
-              {note.date.toLocaleDateString()} · {note.date.toLocaleTimeString()}
+              {note.date.toLocaleDateString()} ·{" "}
+              {note.date.toLocaleTimeString()}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {isEditing ? (
             <>
-              <Button variant="ghost" size="icon" onClick={() => setIsEditing(false)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsEditing(false)}
+              >
                 <X className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="icon" onClick={handleEdit}>
@@ -142,16 +153,18 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
               </Button>
             </>
           ) : (
-            <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditing(true)}
+            >
               <Pencil className="h-4 w-4" />
             </Button>
           )}
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={handleFavoriteClick}
-          >
-            <Star className={`h-4 w-4 ${isFavorite ? 'fill-yellow-400' : ''}`} />
+          <Button variant="ghost" size="icon" onClick={handleFavoriteClick}>
+            <Star
+              className={`h-4 w-4 ${isFavorite ? "fill-yellow-400" : ""}`}
+            />
           </Button>
           <Button variant="ghost" size="icon">
             <Share2 className="h-4 w-4" />
@@ -165,7 +178,9 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
         {isEditing ? (
           <Textarea
             value={editedNote.content}
-            onChange={(e) => setEditedNote({ ...editedNote, content: e.target.value })}
+            onChange={(e) =>
+              setEditedNote({ ...editedNote, content: e.target.value })
+            }
             className="min-h-[200px]"
           />
         ) : (
@@ -173,13 +188,19 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
         )}
         {/* Audio controls */}
         <div className="space-y-2">
-          <audio
-            ref={audioRef}
-            style={{ display: 'none' }}
-          />
+          <audio ref={audioRef} style={{ display: "none" }} />
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={handlePlayPause} className="h-8 w-8">
-              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handlePlayPause}
+              className="h-8 w-8"
+            >
+              {isPlaying ? (
+                <Pause className="h-4 w-4" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
             </Button>
             <div className="flex-1 bg-secondary h-1 rounded-full" />
             <div className="flex items-center gap-2 min-w-[140px]">

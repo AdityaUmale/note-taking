@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { connectDB } from '../../../lib/db';
-import { Favorite } from '@/models/Favorite';
-import mongoose from 'mongoose';
-import Note from '@/models/Note';
+import { NextResponse } from "next/server";
+import { connectDB } from "../../../lib/db";
+import { Favorite } from "@/models/Favorite";
+import mongoose from "mongoose";
+import Note from "@/models/Note";
 
 export async function PATCH(
   request: Request,
@@ -20,17 +20,14 @@ export async function PATCH(
     );
 
     if (!updatedNote) {
-      return NextResponse.json(
-        { error: 'Note not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
     return NextResponse.json(updatedNote);
   } catch (error) {
-    console.error('Error updating note:', error);
+    console.error("Error updating note:", error);
     return NextResponse.json(
-      { error: 'Failed to update note' },
+      { error: "Failed to update note" },
       { status: 500 }
     );
   }
@@ -43,10 +40,10 @@ export async function DELETE(
   try {
     const { id } = await Promise.resolve(params);
     await connectDB();
-    
+
     if (!id) {
       return NextResponse.json(
-        { error: 'Note ID is required' },
+        { error: "Note ID is required" },
         { status: 400 }
       );
     }
@@ -54,7 +51,7 @@ export async function DELETE(
     // Validate ID format
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { error: 'Invalid note ID format' },
+        { error: "Invalid note ID format" },
         { status: 400 }
       );
     }
@@ -63,20 +60,16 @@ export async function DELETE(
     const deletedNote = await Note.findByIdAndDelete(noteId);
 
     if (!deletedNote) {
-      return NextResponse.json(
-        { error: 'Note not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    // Also delete any associated favorites
     await Favorite.deleteMany({ noteId });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting note:', error);
+    console.error("Error deleting note:", error);
     return NextResponse.json(
-      { error: 'Failed to delete note' },
+      { error: "Failed to delete note" },
       { status: 500 }
     );
   }

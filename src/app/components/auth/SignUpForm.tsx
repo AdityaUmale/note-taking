@@ -1,36 +1,35 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SignUpForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords don't match!");
       return;
     }
 
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          password: formData.password
+          password: formData.password,
         }),
       });
 
@@ -38,15 +37,15 @@ export default function SignUpForm() {
 
       if (res.ok) {
         // Store token in localStorage
-        localStorage.setItem('token', data.token);
+        localStorage.setItem("token", data.token);
         // Redirect to dashboard
-        router.push('/dashboard');
+        router.push("/dashboard");
       } else {
         alert(data.error);
       }
     } catch (error) {
-        console.error('Error:', error);
-      alert('An error occurred');
+      console.error("Error:", error);
+      alert("An error occurred");
     }
   };
 
@@ -80,7 +79,9 @@ export default function SignUpForm() {
         type="password"
         placeholder="Confirm Password"
         value={formData.confirmPassword}
-        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+        onChange={(e) =>
+          setFormData({ ...formData, confirmPassword: e.target.value })
+        }
         className="w-full p-2 border rounded"
         required
       />

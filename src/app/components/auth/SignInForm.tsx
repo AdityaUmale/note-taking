@@ -1,24 +1,23 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SignInForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
@@ -27,15 +26,15 @@ export default function SignInForm() {
 
       if (res.ok) {
         // Store token in localStorage
-        localStorage.setItem('token', data.token);
+        localStorage.setItem("token", data.token);
         // Redirect to dashboard
-        router.push('/dashboard');
+        router.push("/dashboard");
       } else {
         alert(data.error);
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred');
+      console.error("Error:", error);
+      alert("An error occurred");
     }
   };
 

@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PenLine, ImageIcon, Mic, Square, Send } from "lucide-react";
 
-// Extend the global Window interface to include SpeechRecognition types
 declare global {
   interface Window {
     SpeechRecognition: new () => SpeechRecognition;
@@ -13,7 +12,6 @@ declare global {
   }
 }
 
-// Minimal SpeechRecognition API type definitions
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
   interimResults: boolean;
@@ -52,7 +50,6 @@ interface SpeechRecognitionErrorEvent extends Event {
   readonly message: string;
 }
 
-// Props type for InputBar
 interface InputBarProps {
   onSubmit: (note: { title: string; content: string }) => void;
 }
@@ -60,7 +57,9 @@ interface InputBarProps {
 export default function InputBar({ onSubmit }: InputBarProps) {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [transcript, setTranscript] = useState<string>("");
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(
+    null
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -68,7 +67,8 @@ export default function InputBar({ onSubmit }: InputBarProps) {
       const SpeechRecognitionConstructor =
         window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognitionConstructor) {
-        const recognizer: SpeechRecognition = new SpeechRecognitionConstructor();
+        const recognizer: SpeechRecognition =
+          new SpeechRecognitionConstructor();
         recognizer.continuous = true;
         recognizer.interimResults = false;
         recognizer.lang = "en-US";
@@ -99,7 +99,7 @@ export default function InputBar({ onSubmit }: InputBarProps) {
     if (isRecording) {
       recognition?.stop();
     } else {
-      setTranscript(""); // Clear previous transcript
+      setTranscript("");
       recognition?.start();
     }
     setIsRecording((prev) => !prev);
@@ -107,13 +107,12 @@ export default function InputBar({ onSubmit }: InputBarProps) {
 
   const handleSubmit = () => {
     if (transcript.trim()) {
-      // Create a title from the first few words
       const title = transcript.split(" ").slice(0, 5).join(" ");
       onSubmit({
         title: title + "...",
         content: transcript,
       });
-      setTranscript(""); // Clear the input after submission
+      setTranscript("");
     }
   };
 
@@ -121,10 +120,18 @@ export default function InputBar({ onSubmit }: InputBarProps) {
     <Card className="w-full max-w-3xl mx-auto rounded-3xl">
       <div className="flex items-center gap-2 p-2 px-3">
         <div className="flex gap-2">
-          <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-muted-foreground"
+          >
             <PenLine className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-muted-foreground"
+          >
             <ImageIcon className="h-5 w-5" />
           </Button>
         </div>

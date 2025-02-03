@@ -1,20 +1,18 @@
-
-import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import { connectDB } from '../../../lib/db';
-import { User } from '@/models/User';
-import { signToken } from '../../../lib/jwt';
+import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import { connectDB } from "../../../lib/db";
+import { User } from "@/models/User";
+import { signToken } from "../../../lib/jwt";
 
 export async function POST(req: Request) {
   try {
     await connectDB();
     const { email, password } = await req.json();
 
-    
     const user = await User.findOne({ email });
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: "Invalid credentials" },
         { status: 400 }
       );
     }
@@ -23,7 +21,7 @@ export async function POST(req: Request) {
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: "Invalid credentials" },
         { status: 400 }
       );
     }
@@ -35,7 +33,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }

@@ -1,15 +1,13 @@
-// dashboard.tsx
-'use client';
+"use client";
 
-import { Home, Star, Search, SortDesc } from 'lucide-react';
-import { NoteCard } from '../components/NoteCard';
-import InputBar from '../components/InputBar';
+import { Home, Star, Search, SortDesc } from "lucide-react";
+import { NoteCard } from "../components/NoteCard";
+import InputBar from "../components/InputBar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useMemo } from 'react';
-import NoteModal from '../components/NoteModal';
+import { useEffect, useState, useMemo } from "react";
+import NoteModal from "../components/NoteModal";
 
-// Update the Note interface to include id
 interface Note {
   id: string;
   title: string;
@@ -23,37 +21,46 @@ export default function Dashboard() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isModalFullScreen, setIsModalFullScreen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const token = localStorage.getItem('token'); // Get token from localStorage
+        const token = localStorage.getItem("token");
         if (!token) {
-          // Redirect to login if no token
-          window.location.href = '/sign-in';
+          window.location.href = "/sign-in";
           return;
         }
 
-        const response = await fetch('/api/notes', {
+        const response = await fetch("/api/notes", {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch notes');
+          throw new Error("Failed to fetch notes");
         }
         const data = await response.json();
-        setNotes(data.map((note: { _id: string; title: string; content: string; date: string; isFavorite?: boolean }) => ({
-          id: note._id,
-          title: note.title,
-          content: note.content,
-          date: new Date(note.date),
-          isFavorite: note.isFavorite
-        })));
+        setNotes(
+          data.map(
+            (note: {
+              _id: string;
+              title: string;
+              content: string;
+              date: string;
+              isFavorite?: boolean;
+            }) => ({
+              id: note._id,
+              title: note.title,
+              content: note.content,
+              date: new Date(note.date),
+              isFavorite: note.isFavorite,
+            })
+          )
+        );
       } catch (error) {
-        console.error('Error fetching notes:', error);
+        console.error("Error fetching notes:", error);
       }
     };
 
@@ -62,23 +69,23 @@ export default function Dashboard() {
 
   const handleNewNote = async (note: { title: string; content: string }) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        window.location.href = '/sign-in';
+        window.location.href = "/sign-in";
         return;
       }
 
-      const response = await fetch('/api/notes', {
-        method: 'POST',
+      const response = await fetch("/api/notes", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(note),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create note');
+        throw new Error("Failed to create note");
       }
 
       const savedNote = await response.json();
@@ -88,9 +95,9 @@ export default function Dashboard() {
         isNew: true,
       };
 
-      setNotes(prevNotes => [newNote, ...prevNotes]);
+      setNotes((prevNotes) => [newNote, ...prevNotes]);
     } catch (error) {
-      console.error('Error creating note:', error);
+      console.error("Error creating note:", error);
     }
   };
 
@@ -100,64 +107,65 @@ export default function Dashboard() {
 
   const handleDeleteNote = async (noteId: string) => {
     if (!noteId) {
-      console.error('Note ID is missing');
+      console.error("Note ID is missing");
       return;
     }
 
     try {
       const response = await fetch(`/api/notes/${noteId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to delete note');
+        throw new Error(error.error || "Failed to delete note");
       }
 
-      // Remove note from UI
-      setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
+      setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
     } catch (error) {
-      console.error('Error deleting note:', error);
+      console.error("Error deleting note:", error);
     }
   };
 
   const handleRenameNote = async (noteId: string) => {
-      const note = notes.find(n => n.id === noteId);
-      if (!note) return;
-  
-      const newTitle = window.prompt('Enter new title:', note.title);
-      if (!newTitle || newTitle === note.title) return;
-  
-      try {
-        const response = await fetch(`/api/notes/${noteId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ title: newTitle }),
-        });
-  
-        const data = await response.json();
-  
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to rename note');
-        }
-  
-        // Update note in UI
-        setNotes(prevNotes => prevNotes.map(note => 
-          note.id === noteId ? { ...note, title: newTitle } : note
-        ));
-      } catch (error) {
-        console.error('Error renaming note:', error);
+    const note = notes.find((n) => n.id === noteId);
+    if (!note) return;
+
+    const newTitle = window.prompt("Enter new title:", note.title);
+    if (!newTitle || newTitle === note.title) return;
+
+    try {
+      const response = await fetch(`/api/notes/${noteId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title: newTitle }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to rename note");
       }
-    };
+
+      setNotes((prevNotes) =>
+        prevNotes.map((note) =>
+          note.id === noteId ? { ...note, title: newTitle } : note
+        )
+      );
+    } catch (error) {
+      console.error("Error renaming note:", error);
+    }
+  };
 
   // Filter notes based on search query
   const filteredNotes = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    return notes.filter(note => 
-      note.title.toLowerCase().includes(query) ||
-      note.content.toLowerCase().includes(query)
+    return notes.filter(
+      (note) =>
+        note.title.toLowerCase().includes(query) ||
+        note.content.toLowerCase().includes(query)
     );
   }, [notes, searchQuery]);
 
@@ -191,14 +199,17 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-12">
               <div className="relative flex-1 max-w-5xl">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input 
-                  placeholder="Search notes..." 
+                <Input
+                  placeholder="Search notes..."
                   className="pl-10 bg-white h-11"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <Button variant="ghost" className="flex items-center gap-2 ml-2 h-12">
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2 ml-2 h-12"
+              >
                 <SortDesc className="h-4 w-4" />
                 Sort
               </Button>
@@ -242,10 +253,10 @@ export default function Dashboard() {
 
       {/* Modal Overlay */}
       {selectedNote && (
-        <div 
+        <div
           className={
             isModalFullScreen
-              ? "fixed inset-0 z-40" // No backdrop or centering when full screen
+              ? "fixed inset-0 z-40"
               : "fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center"
           }
           onClick={(e) => {
@@ -254,10 +265,10 @@ export default function Dashboard() {
             }
           }}
         >
-          <div 
+          <div
             className={
               isModalFullScreen
-                ? "w-full h-full" // Full screen modal container
+                ? "w-full h-full"
                 : "w-[90%] max-w-3xl max-h-[90vh] overflow-auto"
             }
           >
