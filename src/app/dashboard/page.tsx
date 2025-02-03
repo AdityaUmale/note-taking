@@ -78,6 +78,50 @@ export default function Dashboard() {
     setIsModalFullScreen((prev) => !prev);
   };
 
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      const response = await fetch(`/api/notes/${noteId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete note');
+      }
+
+      setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
+    } catch (error) {
+      console.error('Error deleting note:', error);
+    }
+  };
+
+  const handleRenameNote = async (noteId: string) => {
+    const note = notes.find(n => n.id === noteId);
+    if (!note) return;
+
+    const newTitle = window.prompt('Enter new title:', note.title);
+    if (!newTitle) return;
+
+    try {
+      const response = await fetch(`/api/notes/${noteId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: newTitle }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to rename note');
+      }
+
+      setNotes(prevNotes => prevNotes.map(note => 
+        note.id === noteId ? { ...note, title: newTitle } : note
+      ));
+    } catch (error) {
+      console.error('Error renaming note:', error);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-50 p-4">
       {/* Sidebar */}
@@ -121,14 +165,16 @@ export default function Dashboard() {
 
             {/* Notes Grid */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {notes.map((note, index) => (
+              {notes.map((note) => (
                 <NoteCard
-                  key={index}
+                  key={note.id}
                   title={note.title}
                   content={note.content}
                   date={note.date}
                   isNew={note.isNew}
                   onClick={() => setSelectedNote(note)}
+                  onDelete={() => handleDeleteNote(note.id)}
+                  onRename={() => handleRenameNote(note.id)}
                 />
               ))}
             </div>
