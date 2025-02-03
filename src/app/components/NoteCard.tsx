@@ -9,22 +9,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
-interface NoteCardProps {
+interface Note {
   id: string;
   title: string;
   content: string;
   date: Date;
+  isFavorite?: boolean;
+}
+
+interface NoteCardProps {
+  note: Note;
+  id: string;
+  content: string;
+  date: Date;
+  title: string;
   duration?: string;
   isNew?: boolean;
   onClick?: () => void;
-  onDelete?: () => void;
-  onRename?: () => void;
+  onDelete?: (id: string) => void;
+  onRename?: (id: string, newTitle: string) => void;
 }
 
 export function NoteCard({
-  title,
-  content,
-  date,
+  note,
   duration,
   isNew,
   onClick,
@@ -36,17 +43,35 @@ export function NoteCard({
   const handleCopyToClipboard = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(note.content);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy text:", err);
     }
   };
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete && note.id) {
+      onDelete(note.id);
+    }
+  };
+
+  const handleRename = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onRename && note.id) {
+      // You could implement a modal or inline editing here
+      const newTitle = prompt("Enter new title:", note.title);
+      if (newTitle && newTitle !== note.title) {
+        onRename(note.id, newTitle);
+      }
+    }
+  };
+
   return (
     <div
-      className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative"
+      className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative group"
       onClick={onClick}
     >
       <div className="flex items-center justify-between mb-2">
@@ -57,7 +82,7 @@ export function NoteCard({
             </span>
           )}
           <span className="text-sm text-gray-500">
-            {formatDistanceToNow(date, { addSuffix: true })}
+            {formatDistanceToNow(note.date, { addSuffix: true })}
           </span>
         </div>
         {duration && (
@@ -67,15 +92,14 @@ export function NoteCard({
           </div>
         )}
       </div>
-      <h3 className="font-medium text-gray-900 mb-1">{title}</h3>
-      <p className="text-sm text-gray-600 line-clamp-2">{content}</p>
+      <h3 className="font-medium text-gray-900 mb-1">{note.title}</h3>
+      <p className="text-sm text-gray-600 line-clamp-2">{note.content}</p>
 
-      {/* Action Buttons */}
-      <div className="flex items-center justify-end gap-2 mt-4">
+      <div className="absolute top-2 right-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
           variant="ghost"
           size="icon"
-          className={`h-8 w-8 bg-white hover:bg-gray-50 ${
+          className={`h-8 w-8 ${
             copied ? "text-green-500" : "text-gray-400 hover:text-gray-600"
           }`}
           onClick={handleCopyToClipboard}
@@ -87,28 +111,20 @@ export function NoteCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+              className="h-8 w-8 text-gray-400 hover:text-gray-600"
               onClick={(e) => e.stopPropagation()}
             >
               <MoreHorizontal className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                onRename?.();
-              }}
-            >
+            <DropdownMenuItem onClick={handleRename}>
               <Edit2 className="mr-2 h-4 w-4" />
               Rename note
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-red-600"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete?.();
-              }}
+              onClick={handleDelete}
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete note

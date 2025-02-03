@@ -114,24 +114,32 @@ export default function Dashboard() {
   };
 
   const handleDeleteNote = async (noteId: string) => {
-    if (!noteId) {
-      console.error("Note ID is missing");
-      return;
-    }
-
     try {
-      const response = await fetch(`/api/notes/${noteId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to delete note");
+      if (!noteId) {
+        console.error('Note ID is missing');
+        return;
       }
-
-      setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
+  
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/sign-in';
+        return;
+      }
+  
+      const response = await fetch(`/api/notes/${noteId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to delete note');
+      }
+  
+      setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
     } catch (error) {
-      console.error("Error deleting note:", error);
+      console.error('Error deleting note:', error);
     }
   };
 
@@ -226,6 +234,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredNotes.map((note) => (
                 <NoteCard
+                  note={note}
                   key={note.id}
                   id={note.id}
                   title={note.title}
