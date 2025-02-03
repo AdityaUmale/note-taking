@@ -19,21 +19,49 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
+interface Note {
+  id: string;  // Add this
+  title: string;
+  content: string;
+  date: Date;
+  isFavorite?: boolean;  // Add this
+}
+
 interface NoteModalProps {
-  note: {
-    id: string;  // Add this
-    title: string;
-    content: string;
-    date: Date;
-    isFavorite?: boolean;  // Add this
-  };
+  note: Note;
   onClose: () => void;
   toggleFullScreen: () => void;
-  onUpdate?: (note: any) => void;  // Add this
+  onUpdate?: (note: Note) => void;  // Add this
 }
 
 export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }: NoteModalProps) {
   const [isFavorite, setIsFavorite] = useState(note.isFavorite || false);
+
+  const handleFavoriteClick = async () => {
+    try {
+      const response = await fetch(`/api/notes/${note.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isFavorite: !isFavorite,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update favorite status');
+      }
+
+      setIsFavorite(!isFavorite);
+      if (onUpdate) {
+        onUpdate({ ...note, isFavorite: !isFavorite });
+      }
+    } catch (error) {
+      console.error('Error updating favorite status:', error);
+    }
+  };
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -66,37 +94,6 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
-    }
-  };
-
-  const handleFavoriteClick = async () => {
-    if (!note.id) {
-      console.error('Note ID is missing');
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/notes/${note.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          isFavorite: !isFavorite,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update favorite status');
-      }
-
-      const updatedNote = await response.json();
-      setIsFavorite(!isFavorite);
-      if (onUpdate) {
-        onUpdate({ ...note, isFavorite: !isFavorite });
-      }
-    } catch (error) {
-      console.error('Error updating favorite status:', error);
     }
   };
 
