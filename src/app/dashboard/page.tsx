@@ -96,6 +96,37 @@ export default function Dashboard() {
     }
   };
 
+  const handleRenameNote = async (noteId: string) => {
+      const note = notes.find(n => n.id === noteId);
+      if (!note) return;
+  
+      const newTitle = window.prompt('Enter new title:', note.title);
+      if (!newTitle || newTitle === note.title) return;
+  
+      try {
+        const response = await fetch(`/api/notes/${noteId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ title: newTitle }),
+        });
+  
+        const data = await response.json();
+  
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to rename note');
+        }
+  
+        // Update note in UI
+        setNotes(prevNotes => prevNotes.map(note => 
+          note.id === noteId ? { ...note, title: newTitle } : note
+        ));
+      } catch (error) {
+        console.error('Error renaming note:', error);
+      }
+    };
+
   return (
     <div className="flex h-screen bg-gray-50 p-4">
       {/* Sidebar */}

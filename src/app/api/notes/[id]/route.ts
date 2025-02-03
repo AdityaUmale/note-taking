@@ -6,54 +6,27 @@ import Note from '@/models/Note';
 
 export async function PATCH(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await Promise.resolve(context.params);
-  const body = await request.json();
-
   try {
+    const { id } = await Promise.resolve(params);
+    const body = await request.json();
     await connectDB();
-    const noteId = new mongoose.Types.ObjectId(id);
 
-    if (body.isFavorite !== undefined) {
-      // Handle favorite toggle
-      const userId = new mongoose.Types.ObjectId('65c0e0f00000000000000000');
+    const updatedNote = await Note.findByIdAndUpdate(
+      id,
+      { $set: { title: body.title } },
+      { new: true }
+    );
 
-      if (body.isFavorite) {
-        await Favorite.create({
-          userId,
-          noteId
-        });
-      } else {
-        await Favorite.findOneAndDelete({
-          userId,
-          noteId
-        });
-      }
-
-      return NextResponse.json({ success: true });
-    } else {
-      // Handle note update
-      const updatedNote = await Note.findByIdAndUpdate(
-        noteId,
-        { 
-          $set: { 
-            title: body.title,
-            content: body.content 
-          } 
-        },
-        { new: true }
+    if (!updatedNote) {
+      return NextResponse.json(
+        { error: 'Note not found' },
+        { status: 404 }
       );
-
-      if (!updatedNote) {
-        return NextResponse.json(
-          { error: 'Note not found' },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json(updatedNote);
     }
+
+    return NextResponse.json(updatedNote);
   } catch (error) {
     console.error('Error updating note:', error);
     return NextResponse.json(
