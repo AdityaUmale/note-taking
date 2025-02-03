@@ -2,46 +2,62 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '../../../lib/db';
 import { Favorite } from '@/models/Favorite';
 import mongoose from 'mongoose';
+import Note from '@/models/Note';
 
 export async function PATCH(
   request: Request,
   context: { params: { id: string } }
 ) {
   const { id } = await Promise.resolve(context.params);
+  const body = await request.json();
 
   try {
     await connectDB();
-    const body = await request.json();
-    
-    // Create a valid ObjectId for the note
     const noteId = new mongoose.Types.ObjectId(id);
-    // For testing, create a temporary user ID (replace this with actual user ID from auth)
-    const userId = new mongoose.Types.ObjectId('65c0e0f00000000000000000');
 
-    if (body.isFavorite) {
-      await Favorite.create({
-        userId,
-        noteId
-      });
+    if (body.isFavorite !== undefined) {
+      // Handle favorite toggle
+      const userId = new mongoose.Types.ObjectId('65c0e0f00000000000000000');
+
+      if (body.isFavorite) {
+        await Favorite.create({
+          userId,
+          noteId
+        });
+      } else {
+        await Favorite.findOneAndDelete({
+          userId,
+          noteId
+        });
+      }
+
+      return NextResponse.json({ success: true });
     } else {
-      await Favorite.findOneAndDelete({
-        userId,
-        noteId
-      });
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
-      return NextResponse.json(
-        { error: 'Note already in favorites' },
-        { status: 400 }
+      // Handle note update
+      const updatedNote = await Note.findByIdAndUpdate(
+        noteId,
+        { 
+          $set: { 
+            title: body.title,
+            content: body.content 
+          } 
+        },
+        { new: true }
       );
+
+      if (!updatedNote) {
+        return NextResponse.json(
+          { error: 'Note not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(updatedNote);
     }
-    
-    console.error('Error updating favorite:', error);
+  } catch (error) {
+    console.error('Error updating note:', error);
     return NextResponse.json(
-      { error: 'Failed to update favorite status' },
+      { error: 'Failed to update note' },
       { status: 500 }
     );
   }

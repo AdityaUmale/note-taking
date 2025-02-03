@@ -14,10 +14,14 @@ import {
   ChevronRight,
   Plus,
   Maximize2,
+  Check,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Textarea } from "../../components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 interface Note {
   id: string;  // Add this
@@ -97,22 +101,73 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
     }
   };
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedNote, setEditedNote] = useState({
+    title: note.title,
+    content: note.content
+  });
+
+  const handleEdit = async () => {
+    try {
+      const response = await fetch(`/api/notes/${note.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editedNote),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update note');
+      }
+
+      const updatedNote = await response.json();
+      if (onUpdate) {
+        onUpdate({ ...note, ...editedNote });
+      }
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating note:', error);
+    }
+  };
+
   return (
     <Card className="max-w-3xl mx-auto h-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex items-center gap-2">
-          {/* Fullscreen toggle button */}
           <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
             <Maximize2 className="h-4 w-4" />
           </Button>
           <div className="space-y-1">
-            <CardTitle>{note.title}</CardTitle>
+            {isEditing ? (
+              <Input
+                value={editedNote.title}
+                onChange={(e) => setEditedNote({ ...editedNote, title: e.target.value })}
+                className="font-semibold text-xl"
+              />
+            ) : (
+              <CardTitle>{note.title}</CardTitle>
+            )}
             <p className="text-sm text-muted-foreground">
               {note.date.toLocaleDateString()} · {note.date.toLocaleTimeString()}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {isEditing ? (
+            <>
+              <Button variant="ghost" size="icon" onClick={() => setIsEditing(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleEdit}>
+                <Check className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
           <Button 
             variant="ghost" 
             size="icon"
@@ -129,6 +184,15 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {isEditing ? (
+          <Textarea
+            value={editedNote.content}
+            onChange={(e) => setEditedNote({ ...editedNote, content: e.target.value })}
+            className="min-h-[200px]"
+          />
+        ) : (
+          <p className="text-muted-foreground">{note.content}</p>
+        )}
         {/* Audio controls (sample implementation) */}
         <div className="space-y-2">
           <div className="flex items-center gap-4">
