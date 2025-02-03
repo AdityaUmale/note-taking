@@ -3,6 +3,7 @@ import { connectDB } from "../../../lib/db";
 import { Favorite } from "@/models/Favorite";
 import mongoose from "mongoose";
 import Note from "@/models/Note";
+import { verifyToken } from "@/app/lib/jwt";
 
 export async function PATCH(
   request: Request,
@@ -13,14 +14,39 @@ export async function PATCH(
     const body = await request.json();
     await connectDB();
 
-    const updatedNote = await Note.findByIdAndUpdate(
-      id,
-      { $set: { title: body.title } },
+    // Get auth token and verify user
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyToken(token) as { userId: string };
+
+    const updateData: { title?: string; isFavorite?: boolean } = {};
+    if (body.title !== undefined) updateData.title = body.title;
+    if (body.isFavorite !== undefined) updateData.isFavorite = body.isFavorite;
+
+    const updatedNote = await Note.findOneAndUpdate(
+      { _id: id, userId: decoded.userId },
+      { $set: updateData },
       { new: true }
     );
 
     if (!updatedNote) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
+    }
+
+    // Update Favorites collection accordingly
+    if (body.isFavorite !== undefined) {
+      if (body.isFavorite) {
+        await Favorite.findOneAndUpdate(
+          { noteId: id, userId: decoded.userId },
+          { noteId: id, userId: decoded.userId },
+          { upsert: true }
+        );
+      } else {
+        await Favorite.deleteOne({ noteId: id, userId: decoded.userId });
+      }
     }
 
     return NextResponse.json(updatedNote);

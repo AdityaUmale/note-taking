@@ -50,20 +50,27 @@ export default function NoteModal({
 
   const handleFavoriteClick = async () => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/sign-in';
+        return;
+      }
+  
       const response = await fetch(`/api/notes/${note.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
           isFavorite: !isFavorite,
         }),
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to update favorite status");
       }
-
+  
       setIsFavorite(!isFavorite);
       if (onUpdate) {
         onUpdate({ ...note, isFavorite: !isFavorite });

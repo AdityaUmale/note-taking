@@ -23,6 +23,14 @@ export default function Dashboard() {
   const [isModalFullScreen, setIsModalFullScreen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const handleNoteUpdate = (updatedNote: Note) => {
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note.id === updatedNote.id ? updatedNote : note
+      )
+    );
+  };
+
   useEffect(() => {
     const fetchNotes = async () => {
       try {
@@ -159,7 +167,6 @@ export default function Dashboard() {
     }
   };
 
-  // Filter notes based on search query
   const filteredNotes = useMemo(() => {
     const query = searchQuery.toLowerCase();
     return notes.filter(
@@ -195,7 +202,7 @@ export default function Dashboard() {
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-auto">
           <div className="p-8">
-            {/* Updated Search Section */}
+            {/* Search Section */}
             <div className="flex items-center justify-between mb-12">
               <div className="relative flex-1 max-w-5xl">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -215,7 +222,6 @@ export default function Dashboard() {
               </Button>
             </div>
 
-            {/* Updated Notes Grid */}
             {/* Notes Grid */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredNotes.map((note) => (
@@ -237,11 +243,6 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-            {filteredNotes.length === 0 && searchQuery && (
-              <div className="col-span-full text-center text-gray-500 py-8">
-                No notes found matching &quot;{searchQuery}&quot;
-              </div>
-            )}
           </div>
         </div>
 
@@ -280,6 +281,7 @@ export default function Dashboard() {
               }}
               toggleFullScreen={toggleModalFullScreen}
               isFullScreen={isModalFullScreen}
+              onUpdate={handleNoteUpdate}
             />
           </div>
         </div>
