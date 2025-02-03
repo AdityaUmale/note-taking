@@ -28,7 +28,19 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const response = await fetch('/api/notes');
+        const token = localStorage.getItem('token'); // Get token from localStorage
+        if (!token) {
+          // Redirect to login if no token
+          window.location.href = '/sign-in';
+          return;
+        }
+
+        const response = await fetch('/api/notes', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
         if (!response.ok) {
           throw new Error('Failed to fetch notes');
         }
@@ -50,10 +62,17 @@ export default function Dashboard() {
 
   const handleNewNote = async (note: { title: string; content: string }) => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/sign-in';
+        return;
+      }
+
       const response = await fetch('/api/notes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(note),
       });
