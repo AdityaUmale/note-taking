@@ -38,15 +38,28 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await Promise.resolve(context.params);
-
   try {
+    const { id } = await Promise.resolve(params);
     await connectDB();
-    const noteId = new mongoose.Types.ObjectId(id);
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Note ID is required' },
+        { status: 400 }
+      );
+    }
 
-    // Delete the note
+    // Validate ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid note ID format' },
+        { status: 400 }
+      );
+    }
+
+    const noteId = new mongoose.Types.ObjectId(id);
     const deletedNote = await Note.findByIdAndDelete(noteId);
 
     if (!deletedNote) {

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
 interface NoteCardProps {
+  id: string;  // Add this
   title: string;
   content: string;
   date: Date;
@@ -21,6 +22,7 @@ interface NoteCardProps {
 }
 
 export function NoteCard({ 
+
   title, 
   content, 
   date, 

@@ -1,4 +1,3 @@
-// NoteModal.tsx
 "use client";
 
 import { useState, useRef } from "react";
@@ -24,22 +23,25 @@ import { Textarea } from "../../components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 interface Note {
-  id: string;  // Add this
+  id: string;
   title: string;
   content: string;
   date: Date;
-  isFavorite?: boolean;  // Add this
+  isFavorite?: boolean;
 }
 
 interface NoteModalProps {
   note: Note;
   onClose: () => void;
   toggleFullScreen: () => void;
-  onUpdate?: (note: Note) => void;  // Add this
+  onUpdate?: (note: Note) => void;
+  isFullScreen: boolean;
 }
 
 export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }: NoteModalProps) {
   const [isFavorite, setIsFavorite] = useState(note.isFavorite || false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleFavoriteClick = async () => {
     try {
@@ -66,17 +68,6 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
     }
   };
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const progressRef = useRef<HTMLDivElement>(null);
-
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  };
 
   const handlePlayPause = () => {
     if (audioRef.current) {
@@ -86,18 +77,6 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
         audioRef.current.play();
       }
       setIsPlaying(!isPlaying);
-    }
-  };
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
-  };
-
-  const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration);
     }
   };
 
@@ -121,7 +100,6 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
         throw new Error('Failed to update note');
       }
 
-      const updatedNote = await response.json();
       if (onUpdate) {
         onUpdate({ ...note, ...editedNote });
       }
@@ -193,17 +171,19 @@ export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }:
         ) : (
           <p className="text-muted-foreground">{note.content}</p>
         )}
-        {/* Audio controls (sample implementation) */}
+        {/* Audio controls */}
         <div className="space-y-2">
+          <audio
+            ref={audioRef}
+            style={{ display: 'none' }}
+          />
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={handlePlayPause} className="h-8 w-8">
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             </Button>
             <div className="flex-1 bg-secondary h-1 rounded-full" />
             <div className="flex items-center gap-2 min-w-[140px]">
-              <span className="text-sm">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </span>
+              <span className="text-sm">00:00 / 00:00</span>
               <Button variant="ghost" size="sm" className="h-8">
                 <Download className="h-4 w-4 mr-2" />
                 Download Audio

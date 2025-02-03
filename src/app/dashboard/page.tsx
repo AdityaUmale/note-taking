@@ -11,7 +11,7 @@ import NoteModal from '../components/NoteModal';
 
 // Update the Note interface to include id
 interface Note {
-  id: string;  // Add this
+  id: string;
   title: string;
   content: string;
   date: Date;
@@ -33,7 +33,7 @@ export default function Dashboard() {
           throw new Error('Failed to fetch notes');
         }
         const data = await response.json();
-        setNotes(data.map((note: any) => ({
+        setNotes(data.map((note: { _id: string; title: string; content: string; date: string; isFavorite?: boolean }) => ({
           id: note._id,
           title: note.title,
           content: note.content,
@@ -80,20 +80,25 @@ export default function Dashboard() {
   };
 
   const handleDeleteNote = async (noteId: string) => {
+    if (!noteId) {
+      console.error('Note ID is missing');
+      return;
+    }
+
     try {
       const response = await fetch(`/api/notes/${noteId}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete note');
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete note');
       }
 
       // Remove note from UI
       setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
     } catch (error) {
       console.error('Error deleting note:', error);
-      // You might want to add a toast notification here for error feedback
     }
   };
 
@@ -181,10 +186,12 @@ export default function Dashboard() {
             </div>
 
             {/* Updated Notes Grid */}
+            {/* Notes Grid */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredNotes.map((note) => (
                 <NoteCard
                   key={note.id}
+                  id={note.id}
                   title={note.title}
                   content={note.content}
                   date={note.date}
@@ -196,10 +203,15 @@ export default function Dashboard() {
               ))}
               {filteredNotes.length === 0 && searchQuery && (
                 <div className="col-span-full text-center text-gray-500 py-8">
-                  No notes found matching "{searchQuery}"
+                  No notes found matching &quot;{searchQuery}&quot;
                 </div>
               )}
             </div>
+            {filteredNotes.length === 0 && searchQuery && (
+              <div className="col-span-full text-center text-gray-500 py-8">
+                No notes found matching &quot;{searchQuery}&quot;
+              </div>
+            )}
           </div>
         </div>
 
