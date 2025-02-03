@@ -17,7 +17,7 @@ const favoriteSchema = new mongoose.Schema({
   }
 });
 
-// Ensure a user can't favorite the same note multiple times
+
 favoriteSchema.index({ userId: 1, noteId: 1 }, { unique: true });
 
 export const Favorite = mongoose.models.Favorite || mongoose.model('Favorite', favoriteSchema);

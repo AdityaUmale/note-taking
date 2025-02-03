@@ -10,9 +10,18 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await Promise.resolve(params);
-    const body = await request.json();
     await connectDB();
+    const { id } = await Promise.resolve(params); // Await params
+
+    // Validate ID
+    if (!id || id === 'undefined' || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid note ID' },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
 
     // Get auth token and verify user
     const authHeader = request.headers.get('authorization');
@@ -36,7 +45,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    // Update Favorites collection accordingly
+    // Handle favorites collection update
     if (body.isFavorite !== undefined) {
       if (body.isFavorite) {
         await Favorite.findOneAndUpdate(

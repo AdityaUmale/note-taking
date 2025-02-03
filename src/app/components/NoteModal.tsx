@@ -23,7 +23,8 @@ import { Textarea } from "../../components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 interface Note {
-  id: string;
+  id: string;  // Make sure this matches the structure of your note object
+  _id?: string; // Add this if you're getting _id from MongoDB
   title: string;
   content: string;
   date: Date;
@@ -55,8 +56,14 @@ export default function NoteModal({
         window.location.href = '/sign-in';
         return;
       }
-  
-      const response = await fetch(`/api/notes/${note.id}`, {
+
+      const noteId = note.id || note._id; // Handle both id and _id
+      if (!noteId) {
+        console.error('Note ID is missing');
+        return;
+      }
+
+      const response = await fetch(`/api/notes/${noteId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -66,11 +73,12 @@ export default function NoteModal({
           isFavorite: !isFavorite,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to update favorite status");
       }
-  
+
+      await response.json();
       setIsFavorite(!isFavorite);
       if (onUpdate) {
         onUpdate({ ...note, isFavorite: !isFavorite });
@@ -99,18 +107,33 @@ export default function NoteModal({
 
   const handleEdit = async () => {
     try {
-      const response = await fetch(`/api/notes/${note.id}`, {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/sign-in';
+        return;
+      }
+
+      const noteId = note.id || note._id; // Handle both id and _id
+      if (!noteId) {
+        console.error('Note ID is missing');
+        return;
+      }
+
+      const response = await fetch(`/api/notes/${noteId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(editedNote),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update note");
+        const error = await response.json();
+        throw new Error(error.error || "Failed to update note");
       }
 
+await response.json();
       if (onUpdate) {
         onUpdate({ ...note, ...editedNote });
       }
