@@ -6,7 +6,7 @@ import { NoteCard } from '../components/NoteCard';
 import InputBar from '../components/InputBar';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import NoteModal from '../components/NoteModal';
 
 // Update the Note interface to include id
@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isModalFullScreen, setIsModalFullScreen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -127,6 +128,15 @@ export default function Dashboard() {
       }
     };
 
+  // Filter notes based on search query
+  const filteredNotes = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    return notes.filter(note => 
+      note.title.toLowerCase().includes(query) ||
+      note.content.toLowerCase().includes(query)
+    );
+  }, [notes, searchQuery]);
+
   return (
     <div className="flex h-screen bg-gray-50 p-4">
       {/* Sidebar */}
@@ -153,13 +163,15 @@ export default function Dashboard() {
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-auto">
           <div className="p-8">
-            {/* Search and Sort Section */}
+            {/* Updated Search Section */}
             <div className="flex items-center justify-between mb-12">
               <div className="relative flex-1 max-w-5xl">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input 
-                  placeholder="Search" 
+                  placeholder="Search notes..." 
                   className="pl-10 bg-white h-11"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <Button variant="ghost" className="flex items-center gap-2 ml-2 h-12">
@@ -168,9 +180,9 @@ export default function Dashboard() {
               </Button>
             </div>
 
-            {/* Notes Grid */}
+            {/* Updated Notes Grid */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {notes.map((note) => (
+              {filteredNotes.map((note) => (
                 <NoteCard
                   key={note.id}
                   title={note.title}
@@ -182,6 +194,11 @@ export default function Dashboard() {
                   onRename={() => handleRenameNote(note.id)}
                 />
               ))}
+              {filteredNotes.length === 0 && searchQuery && (
+                <div className="col-span-full text-center text-gray-500 py-8">
+                  No notes found matching "{searchQuery}"
+                </div>
+              )}
             </div>
           </div>
         </div>
