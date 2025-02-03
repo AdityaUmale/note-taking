@@ -9,11 +9,14 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from 'react';
 import NoteModal from '../components/NoteModal';
 
+// Update the Note interface to include id
 interface Note {
+  id: string;  // Add this
   title: string;
   content: string;
   date: Date;
   isNew?: boolean;
+  isFavorite?: boolean;
 }
 
 export default function Dashboard() {
@@ -29,9 +32,12 @@ export default function Dashboard() {
           throw new Error('Failed to fetch notes');
         }
         const data = await response.json();
-        setNotes(data.map((note: Note) => ({
-          ...note,
-          date: new Date(note.date)
+        setNotes(data.map((note: any) => ({
+          id: note._id,
+          title: note.title,
+          content: note.content,
+          date: new Date(note.date),
+          isFavorite: note.isFavorite
         })));
       } catch (error) {
         console.error('Error fetching notes:', error);
@@ -68,7 +74,6 @@ export default function Dashboard() {
     }
   };
 
-  // Toggle the full screen state for the modal
   const toggleModalFullScreen = () => {
     setIsModalFullScreen((prev) => !prev);
   };

@@ -1,7 +1,7 @@
 // NoteModal.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Star,
   Share2,
@@ -21,19 +21,24 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 interface NoteModalProps {
   note: {
+    id: string;  // Add this
     title: string;
     content: string;
     date: Date;
+    isFavorite?: boolean;  // Add this
   };
   onClose: () => void;
   toggleFullScreen: () => void;
-  isFullScreen: boolean;
+  onUpdate?: (note: any) => void;  // Add this
 }
 
-export default function NoteModal({ note, onClose, toggleFullScreen }: NoteModalProps) {
+export default function NoteModal({ note, onClose, toggleFullScreen, onUpdate }: NoteModalProps) {
+  const [isFavorite, setIsFavorite] = useState(note.isFavorite || false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -42,8 +47,57 @@ export default function NoteModal({ note, onClose, toggleFullScreen }: NoteModal
   };
 
   const handlePlayPause = () => {
-    // (Assuming you want to implement play/pause functionality later)
-    setIsPlaying((prev) => !prev);
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleFavoriteClick = async () => {
+    if (!note.id) {
+      console.error('Note ID is missing');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/notes/${note.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isFavorite: !isFavorite,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update favorite status');
+      }
+
+      const updatedNote = await response.json();
+      setIsFavorite(!isFavorite);
+      if (onUpdate) {
+        onUpdate({ ...note, isFavorite: !isFavorite });
+      }
+    } catch (error) {
+      console.error('Error updating favorite status:', error);
+    }
   };
 
   return (
@@ -62,8 +116,12 @@ export default function NoteModal({ note, onClose, toggleFullScreen }: NoteModal
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <Star className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleFavoriteClick}
+          >
+            <Star className={`h-4 w-4 ${isFavorite ? 'fill-yellow-400' : ''}`} />
           </Button>
           <Button variant="ghost" size="icon">
             <Share2 className="h-4 w-4" />
