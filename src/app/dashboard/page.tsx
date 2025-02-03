@@ -175,15 +175,31 @@ export default function Dashboard() {
     }
   };
 
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Add this line
+
+  // Update the filteredNotes memo to include sorting
   const filteredNotes = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    return notes.filter(
+    const filtered = notes.filter(
       (note) =>
         note.title.toLowerCase().includes(query) ||
         note.content.toLowerCase().includes(query)
     );
-  }, [notes, searchQuery]);
 
+    return filtered.sort((a, b) => {
+      if (sortOrder === 'asc') {
+        return a.date.getTime() - b.date.getTime();
+      }
+      return b.date.getTime() - a.date.getTime();
+    });
+  }, [notes, searchQuery, sortOrder]);
+
+  // Add toggle sort function
+  const toggleSort = () => {
+    setSortOrder(current => current === 'asc' ? 'desc' : 'asc');
+  };
+
+  // Update the Sort button in the JSX
   return (
     <div className="flex h-screen bg-gray-50 p-4">
       {/* Sidebar */}
@@ -224,9 +240,10 @@ export default function Dashboard() {
               <Button
                 variant="ghost"
                 className="flex items-center gap-2 ml-2 h-12"
+                onClick={toggleSort}
               >
-                <SortDesc className="h-4 w-4" />
-                Sort
+                <SortDesc className={`h-4 w-4 transform ${sortOrder === 'asc' ? 'rotate-180' : ''}`} />
+                Sort {sortOrder === 'asc' ? 'Oldest' : 'Newest'}
               </Button>
             </div>
 
